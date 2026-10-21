@@ -1,0 +1,19 @@
+﻿venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.env
+.env.*
+!.env.example
+.hermes/
+_audit/
+saves/
+
+# Build artifacts and temporary logs
+archive/_internal_pyinstaller_artifact/
+archive/legacy_dupes_2026_08/_internal/
+_tmp_static_check*.log
+server_errors.log
