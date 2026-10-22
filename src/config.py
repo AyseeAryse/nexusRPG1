@@ -2,11 +2,25 @@
 Configuration for AI RPG Game
 Supports Ollama and LMStudio backends
 """
+import json
 import os
 from pathlib import Path
 
 # Get the project root directory (parent of src/)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _launcher_preferences():
+    """Load optional local settings without modifying tracked Python source."""
+    try:
+        with (PROJECT_ROOT / "config_data" / "launcher.json").open(encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+_LAUNCHER_PREFERENCES = _launcher_preferences()
 
 # ============================================================
 # AI BACKEND CONFIGURATION
@@ -17,7 +31,7 @@ AI_BACKEND = os.environ.get("AI_BACKEND", "ollama")
 
 # Ollama settings
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "hf.co/mradermacher/MN-Violet-Lotus-12B-GGUF:Q4_K_M")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", _LAUNCHER_PREFERENCES.get("ollama_model", "hf.co/mradermacher/MN-Violet-Lotus-12B-GGUF:Q4_K_M"))
 
 # LMStudio settings (OpenAI-compatible API)
 LMSTUDIO_BASE_URL = os.environ.get("LMSTUDIO_URL", "http://localhost:1234/v1")
@@ -42,14 +56,14 @@ AI_CONTEXT_WINDOW = int(os.environ.get("AI_CONTEXT_WINDOW", "8192"))
 # ============================================================
 # GAME CONFIGURATION
 # ============================================================
-GAME_DATA_DIR = os.environ.get("GAME_DATA_DIR", str(PROJECT_ROOT / "game_data"))
+GAME_DATA_DIR = os.environ.get("GAME_DATA_DIR", str(PROJECT_ROOT / "game_data" / "active"))
 DATABASE_DIR = os.environ.get("DATABASE_DIR", str(PROJECT_ROOT / "database"))
 SAVES_DIR = os.environ.get("SAVES_DIR", str(PROJECT_ROOT / "saves"))
 
 # Server
-HOST = os.environ.get("HOST", "0.0.0.0")
+HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8080"))
-DEBUG = os.environ.get("DEBUG", "true").lower() == "true"
+DEBUG = os.environ.get("DEBUG", "false").lower() == "true"
 
 # Language
 GAME_LANGUAGE = os.environ.get("GAME_LANGUAGE", "ru")
