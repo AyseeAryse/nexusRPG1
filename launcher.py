@@ -232,11 +232,9 @@ def check_ollama():
             status("→", "Установка: curl -fsSL https://ollama.com/install.sh | sh", Colors.YELLOW)
             if ask_yes_no("Установить Ollama сейчас?"):
                 try:
-                    subprocess.run("curl -fsSL https://ollama.com/install.sh | sh",
-                                   shell=True, timeout=300)
-                    if shutil.which("ollama"):
-                        status("✓", "Ollama установлен", Colors.GREEN)
-                        return check_ollama_running()
+                    status("→", "Установите Ollama вручную: https://ollama.com/download", Colors.YELLOW)
+                    webbrowser.open("https://ollama.com/download")
+                    return False
                 except Exception as e:
                     status("✗", f"Ошибка установки: {e}", Colors.RED)
             return False
@@ -486,33 +484,34 @@ def pull_model(model_name):
         return False
 
 
+def _launcher_settings_path():
+    game_dir = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(game_dir, "config_data", "launcher.json")
+
+
 def update_config_model(model_name):
-    """Обновить config.py с выбранной моделью."""
-    if getattr(sys, 'frozen', False):
-        config_path = os.path.join(os.path.dirname(sys.executable), "config.py")
-    else:
-        config_path = os.path.join(os.path.dirname(__file__), "config.py")
-    if not os.path.exists(config_path):
+    """Save selected model in local preferences, not tracked Python source."""
+    if not isinstance(model_name, str) or not model_name.strip():
         return
-
+    path = _launcher_settings_path()
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
-            content = f.read()
-
-        # Заменяем модель по умолчанию
-        import re
-        content = re.sub(
-            r'OLLAMA_MODEL = os\.environ\.get\("OLLAMA_MODEL", "[^"]*"\)',
-            f'OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "{model_name}")',
-            content,
-        )
-
-        with open(config_path, "w", encoding="utf-8") as f:
-            f.write(content)
-
-        status("✓", f"config.py обновлён: модель = {model_name}", Colors.GREEN)
-    except Exception as e:
-        status("⚠", f"Не удалось обновить config.py: {e}", Colors.YELLOW)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        settings = {}
+        if os.path.isfile(path):
+            with open(path, "r", encoding="utf-8") as f:
+                settings = json.load(f)
+            if not isinstance(settings, dict):
+                settings = {}
+        settings["ollama_model"] = model_name
+        tmp_path = path + ".tmp"
+        with open(tmp_path, "w", encoding="utf-8") as f:
+            json.dump(settings, f, ensure_ascii=False, indent=2)
+        os.replace(tmp_path, path)
+        os.environ["OLLAMA_MODEL"] = model_name
+        LAUNCHER_CONFIG["default_model"] = model_name
+        status("✓", f"Настройка модели сохранена: {model_name}", Colors.GREEN)
+    except (OSError, ValueError) as e:
+        status("⚠", f"Не удалось сохранить модель: {e}", Colors.YELLOW)
 
 
 # ════════════════════════════════════════════════════════════
@@ -638,7 +637,9 @@ def check_game_files():
     # Проверка game_data
     game_data_dir = os.path.join(game_dir, "game_data")
     if os.path.isdir(game_data_dir):
-        json_count = len([f for f in os.listdir(game_data_dir) if f.endswith(".json")])
+        json_count = sum(len([f for f in files if f.endswith(".json")])
+                         for root, dirs, files in os.walk(game_data_dir)
+                         if "archive" not in root.split(os.sep))
         status("✓", f"Файлы игры — OK ({len(critical_files)} core + {json_count} data)", Colors.GREEN)
     else:
         status("✓", f"Файлы игры — OK ({len(critical_files)} core)", Colors.GREEN)
@@ -658,6 +659,14 @@ def main():
 
     game_dir = os.path.dirname(sys.executable) if IS_FROZEN \
                else os.path.dirname(os.path.abspath(__file__))
+    try:
+        with open(_launcher_settings_path(), "r", encoding="utf-8") as f:
+            stored = json.load(f)
+        if isinstance(stored, dict) and isinstance(stored.get("ollama_model"), str):
+            LAUNCHER_CONFIG["default_model"] = os.environ.get("OLLAMA_MODEL", stored["ollama_model"])
+            os.environ.setdefault("OLLAMA_MODEL", LAUNCHER_CONFIG["default_model"])
+    except (OSError, ValueError):
+        pass
     print(f"  {Colors.DIM}Система: {platform.system()} {platform.release()}")
     print(f"  Каталог: {game_dir}{Colors.RESET}")
 
@@ -753,11 +762,9 @@ def check_ollama_auto():
     elif platform.system() == "Linux":
         try:
             status("→", "Устанавливаю Ollama...", Colors.YELLOW)
-            subprocess.run("curl -fsSL https://ollama.com/install.sh | sh",
-                           shell=True, timeout=300)
-            if shutil.which("ollama"):
-                status("✓", "Ollama установлен", Colors.GREEN)
-                return check_ollama_running()
+            status("→", "Установите Ollama вручную: https://ollama.com/download", Colors.YELLOW)
+            webbrowser.open("https://ollama.com/download")
+            return False
         except Exception as e:
             status("✗", f"Ошибка: {e}", Colors.RED)
     else:
