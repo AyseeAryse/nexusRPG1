@@ -6,8 +6,9 @@ Adds 8-tier world event system with 150+ events.
 import json
 import os
 import random
+from src import config
 
-GAME_DATA = os.path.join(os.path.dirname(__file__), "game_data")
+GAME_DATA = config.GAME_DATA_DIR
 
 
 # ════════════════════════════════════════════════════════════
@@ -15,8 +16,17 @@ GAME_DATA = os.path.join(os.path.dirname(__file__), "game_data")
 # ════════════════════════════════════════════════════════════
 
 def _load_json(filename):
+    """Locate the active JSON file, including category subdirectories."""
     path = os.path.join(GAME_DATA, filename)
-    if not os.path.exists(path):
+    if not os.path.isfile(path):
+        path = None
+        for current_dir, dirs, files in os.walk(GAME_DATA):
+            dirs[:] = sorted(d for d in dirs if d != "archive")
+            if filename in files:
+                if path is not None:
+                    raise ValueError(f"Duplicate game data filename: {filename}")
+                path = os.path.join(current_dir, filename)
+    if not path:
         return {}
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
