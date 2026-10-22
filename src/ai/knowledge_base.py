@@ -83,16 +83,20 @@ class KnowledgeBase:
         # First pass: load everything
         all_files = {}
         errors = 0
-        for fname in sorted(os.listdir(data_dir)):
-            if not fname.endswith('.json'):
-                continue
-            fpath = os.path.join(data_dir, fname)
-            try:
-                with open(fpath, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                all_files[fname] = data
-            except (json.JSONDecodeError, UnicodeDecodeError) as e:
-                errors += 1
+        for current_dir, dirs, filenames in os.walk(data_dir):
+            dirs[:] = sorted(d for d in dirs if d != 'archive')
+            for fname in sorted(filenames):
+                if not fname.endswith('.json'):
+                    continue
+                if fname in all_files:
+                    raise ValueError(f"Duplicate game data filename: {fname}")
+                fpath = os.path.join(current_dir, fname)
+                try:
+                    with open(fpath, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    all_files[fname] = data
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    errors += 1
 
         # Second pass: resolve conflicts
         # Group by base name
