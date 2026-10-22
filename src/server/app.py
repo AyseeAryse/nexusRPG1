@@ -199,35 +199,12 @@ def api_action_stream():
             full_response.append(token)
             yield f"data: {json.dumps({'type': 'token', 'data': token}, ensure_ascii=False)}\n\n"
 
-        # === POST-AI: Parse [STATE] block and apply changes ===
+        # Parse the same AI response format; apply time/XP/defeat in GameEngine.
         raw_response = "".join(full_response)
         parsed = engine._parse_ai_response(raw_response)
-        narrative = parsed["narrative"]
-
-        engine.state.conversation_history.append({"role": "assistant", "content": narrative})
-        engine.state.session_events.append({
-            "time": dict(engine.state.game_time),
-            "action": action[:100], "result": narrative[:100],
-        })
-
-        # Time advance (AI-determined or random)
-        time_mins = parsed.get("state_changes", {}).get("_custom_time", random.randint(5, 30))
-        engine._advance_time(minutes=time_mins)
-
-        # === V7: XP → LEVEL UP ===
-        from src.systems.combat import process_xp_gain
-        xp_to_add = parsed.get("state_changes", {}).get("_xp_to_add", 0)
-        level_up_info = None
-        if xp_to_add and xp_to_add > 0:
-            level_up_info = process_xp_gain(engine.state.character, xp_to_add)
-
-        # === V7: HP=0 DEFEAT (fail-forward) ===
-        from src.systems.combat import apply_defeat
-        defeat_result = None
-        if engine.state.character.get("current_hp", 1) <= 0:
-            defeat_result = apply_defeat(
-                engine.state.character, engine.state.inventory,
-                engine.state.game_time, engine.state.current_location)
+        finalized = engine._finalize_player_action(action, parsed)
+        level_up_info = finalized["level_up"]
+        defeat_result = finalized["defeat"]
 
         # === Send final state with ALL info ===
         done_data = {
