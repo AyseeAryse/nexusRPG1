@@ -525,21 +525,8 @@ class GameEngine:
             "income_result": income_result,
         }
 
-    def process_player_action(self, action: str) -> Dict:
-        prepared = self._prepare_player_action(action)
-        if "immediate" in prepared:
-            return prepared["immediate"]
-        mechanical_result = prepared["mechanical_result"]
-        mech_action_result = prepared["mech_action_result"]
-        subsystem_result = prepared["subsystem_result"]
-        world_events = prepared["world_events"]
-        triggered_consequences = prepared["triggered_consequences"]
-        income_result = prepared["income_result"]
-
-        system_prompt = self._build_system_prompt(action, mechanical_result,
-                                                   mech_action_result, subsystem_result)
-        ai_response = self.ai.generate(system_prompt=system_prompt, messages=self.state.conversation_history[-12:])
-        parsed = self._parse_ai_response(ai_response)
+    def _finalize_player_action(self, action: str, parsed: Dict) -> Dict:
+        """Apply the shared post-AI effects once for normal and streamed turns."""
         self.state.conversation_history.append({"role": "assistant", "content": parsed["narrative"]})
         self.state.session_events.append({
             "time": dict(self.state.game_time),
@@ -562,6 +549,27 @@ class GameEngine:
                 self.state.character, self.state.inventory,
                 self.state.game_time, self.state.current_location
             )
+
+        return {"level_up": level_up_info, "defeat": defeat_result}
+
+    def process_player_action(self, action: str) -> Dict:
+        prepared = self._prepare_player_action(action)
+        if "immediate" in prepared:
+            return prepared["immediate"]
+        mechanical_result = prepared["mechanical_result"]
+        mech_action_result = prepared["mech_action_result"]
+        subsystem_result = prepared["subsystem_result"]
+        world_events = prepared["world_events"]
+        triggered_consequences = prepared["triggered_consequences"]
+        income_result = prepared["income_result"]
+
+        system_prompt = self._build_system_prompt(action, mechanical_result,
+                                                   mech_action_result, subsystem_result)
+        ai_response = self.ai.generate(system_prompt=system_prompt, messages=self.state.conversation_history[-12:])
+        parsed = self._parse_ai_response(ai_response)
+        finalized = self._finalize_player_action(action, parsed)
+        level_up_info = finalized["level_up"]
+        defeat_result = finalized["defeat"]
 
         return {
             "narrative": parsed["narrative"],
