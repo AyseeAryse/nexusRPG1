@@ -1475,7 +1475,7 @@ class GameEngine:
 
     def _save_path(self, slot_name):
         """Reject path traversal and OS-reserved names for save slots."""
-        if not isinstance(slot_name, str) or not re.fullmatch(r"[\\w .-]{1,80}", slot_name):
+        if not isinstance(slot_name, str) or not re.fullmatch(r"[\w .-]{1,80}", slot_name):
             return None
         if slot_name != slot_name.strip(" .") or ".." in slot_name:
             return None
