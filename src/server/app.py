@@ -55,6 +55,11 @@ def init_engine():
 def index():
     return render_template("index.html")
 
+@app.route("/health", methods=["GET"])
+def health():
+    """Lightweight process health check; does not depend on AI availability."""
+    return jsonify({"status": "ok"}), 200
+
 # ---- API: Status & Settings ----
 @app.route("/api/status")
 def api_status():

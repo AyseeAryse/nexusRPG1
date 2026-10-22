@@ -1,192 +1,56 @@
-# 🧪 Тестирование NexusRPG
+# Тестирование NexusRPG
 
-## Запуск тестов
+## Локальный запуск
 
-### Базовый запуск
+Требуется Python 3.11 или новее. Из корня репозитория:
+
 ```bash
-pip install pytest
+python -m pip install -r requirements.txt
+python -m compileall -q src tests
+python -m pytest tests/ -q
+```
+
+Для подробного вывода:
+
+```bash
 python -m pytest tests/ -v
 ```
 
-### С покрытием кода
-```bash
-pip install pytest-cov
-pytest tests/ --cov=src --cov-report=html --cov-report=term
-```
+Тесты не должны зависеть от работающего Ollama/LM Studio или настоящего облачного API. При обращении к внешним сервисам используйте моки и изолируйте тестовые данные.
 
-Отчёт откроется в `htmlcov/index.html`.
+## Что покрывается сейчас
 
----
+В репозитории есть следующие группы:
 
-## Существующие тесты
+- `tests/test_smoke.py` — импорт ключевых пакетов и базовые настройки.
+- `tests/test_engine_basic.py` — базовые проверки бросков кубиков, состояния и движка.
+- `tests/test_server_smoke.py` — импорт Flask-приложения, базовые страницы, health endpoint и конфигурация.
+- `tests/test_world_basic.py` — базовые конструкции мира, NPC, генераторы и сериализация.
 
-| Файл | Описание | Статус |
-|------|----------|--------|
-| `tests/test_combat.py` | Тесты боевой системы | 🟡 В разработке |
-| `tests/test_generation.py` | Тесты генерации контента | 🟡 В разработке |
+Наличие этих тестов не означает полноценного покрытия игровой логики. Следующие приоритеты — сквозной цикл игры, сохранение/загрузка, корректность API и негативные сценарии ключевых механик. Смотри [ROADMAP.md](../ROADMAP.md).
 
----
+## Правила хорошего теста
 
-## Написание новых тестов
+1. Проверяйте конкретный результат, а не только наличие класса или метода.
+2. Не считайте HTTP 4xx/5xx допустимым ответом для маршрута, который должен работать.
+3. Проверяйте и успешные, и ошибочные сценарии: неверный ввод, нехватка ресурсов, отсутствующий объект, недоступный AI-бэкенд.
+4. Используйте временные директории для файлов сохранений и не полагайтесь на состояние из предыдущих запусков.
+5. Для случайной генерации фиксируйте seed там, где это предусмотрено, либо проверяйте инварианты результата.
+6. Тесты должны быть повторяемыми и не менять реальные пользовательские сохранения.
 
-### Структура теста
+## GitHub Actions
 
-```python
-# tests/test_example.py
-import pytest
-from src.core.engine import GameState, DiceRoller
+Workflow находится в `.github/workflows/python-checks.yml`. На push и pull request запускаются:
 
-class TestDiceRoller:
-    def test_roll_d20_returns_value_between_1_and_20(self):
-        roller = DiceRoller()
-        result = roller.roll("1d20")
-        assert 1 <= result <= 20
-    
-    def test_roll_with_modifier(self):
-        roller = DiceRoller()
-        result = roller.roll("1d20+5")
-        assert 6 <= result <= 25
-```
+1. Установка зависимостей на Python 3.11.
+2. Проверка синтаксиса через `compileall`.
+3. Полный набор тестов через `pytest`.
 
-### Запуск конкретного теста
-```bash
-pytest tests/test_example.py::TestDiceRoller::test_roll_d20_returns_value_between_1_and_20 -v
-```
+Красный CI — это сигнал разобраться с ошибкой или нестабильностью теста, а не повод ослаблять утверждения до разрешения любого статуса ответа.
 
----
+## Диагностика
 
-## Моки для AI-бэкендов
-
-Для тестов без реальных API вызовов используйте моки:
-
-```python
-# tests/test_ai.py
-import pytest
-from unittest.mock import Mock, patch
-from src.ai.connector import AIConnector
-
-@patch('src.ai.connector.requests.post')
-def test_ai_connector_ollama(mock_post):
-    # Настройка мока
-    mock_response = Mock()
-    mock_response.json.return_value = {'response': 'Hello!'}
-    mock_post.return_value = mock_response
-    
-    connector = AIConnector(backend='ollama')
-    result = connector.generate("test prompt", [])
-    
-    assert result == 'Hello!'
-    mock_post.assert_called_once()
-```
-
----
-
-## Интеграционные тесты
-
-Для тестирования полного цикла используйте тестовый клиент Flask:
-
-```python
-# tests/test_integration.py
-import pytest
-from src.server.app import create_app
-
-@pytest.fixture
-def client():
-    app = create_app(testing=True)
-    with app.test_client() as client:
-        yield client
-
-def test_character_creation(client):
-    response = client.post('/api/character/create', json={
-        'name': 'Test Character',
-        'origin': 'techno_priest'
-    })
-    assert response.status_code == 200
-    data = response.get_json()
-    assert 'character_id' in data
-```
-
----
-
-## CI/CD (GitHub Actions)
-
-Пример workflow для автоматического тестирования:
-
-```yaml
-# .github/workflows/tests.yml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests/ --cov=src
-```
-
----
-
-## Отладка тестов
-
-### Режим отладки
-```bash
-pytest tests/ -v -s  # Показать print выводы
-pytest tests/ --pdb  # Остановиться при ошибке
-```
-
-### Логирование в тестах
-```python
-import logging
-
-def test_with_logging(caplog):
-    caplog.set_level(logging.INFO)
-    # ... код теста
-    assert "Expected log message" in caplog.text
-```
-
----
-
-## Покрытие кода
-
-### Минимальные требования
-- Core модули: >80%
-- Systems: >70%
-- AI connector: >90%
-- Server routes: >60%
-
-### Проверка покрытия
-```bash
-pytest tests/ --cov=src --cov-fail-under=70
-```
-
----
-
-## Производительность тестов
-
-### Запуск бенчмарков
-```bash
-pip install pytest-benchmark
-pytest tests/ --benchmark-only
-```
-
-### Профилирование
-```bash
-pytest tests/ --profile-svg=profile.svg
-```
-
----
-
-<div align="center">
-
-**Документация находится в разработке.** Помоги улучшить тесты — создай [Pull Request](https://github.com/AyseeAryse/NexusRPG/pulls)!
-
-</div>
+- Проверьте, что активировано виртуальное окружение нужного проекта.
+- Запускайте команды из корня репозитория, где находятся `src/`, `game_data/`, `templates/` и `static/`.
+- Для отдельного теста используйте: `python -m pytest tests/test_server_smoke.py -v`.
+- Не добавляйте реальные ключи в логи, тестовые данные, Issues или Pull Requests.

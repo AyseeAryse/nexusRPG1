@@ -33,31 +33,38 @@ class TestServerRoutes:
 
     @pytest.fixture
     def client(self):
-        """Создание тестового клиента Flask."""
-        import os
+        """Create a Flask test client using the application's real project paths."""
         from src.server.app import app
-        
-        # Устанавливаем правильные пути для шаблонов и статики
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        app.template_folder = os.path.join(base_dir, 'templates')
-        app.static_folder = os.path.join(base_dir, 'static')
-        app.config['TESTING'] = True
-        
+
+        app.config["TESTING"] = True
         with app.test_client() as client:
             yield client
 
     def test_health_endpoint(self, client):
-        """Эндпоинт /health отвечает."""
-        # Простой тест - проверяем что эндпоинт существует
-        response = client.get('/health')
-        # Эндпоинт должен существовать и возвращать какой-то ответ
-        assert response.status_code in [200, 404, 500]
+        """Health endpoint exists and reports a successful process check."""
+        response = client.get("/health")
+
+        assert response.status_code == 200
+        assert response.is_json
+        assert response.get_json() == {"status": "ok"}
 
     def test_root_endpoint(self, client):
-        """Корневой эндпоинт / отвечает."""
-        response = client.get('/')
-        # Может возвращать HTML или ошибку (шаблон может не найтись в тестах)
-        assert response.status_code in [200, 302, 404, 500]
+        """The main page is served successfully."""
+        response = client.get("/")
+
+        assert response.status_code == 200
+        assert response.mimetype == "text/html"
+        assert b"NEXUS RPG" in response.data
+
+    def test_static_assets_are_served(self, client):
+        """The stylesheet and browser application use their real repository paths."""
+        css_response = client.get("/static/css/style.css")
+        js_response = client.get("/static/js/app.js")
+
+        assert css_response.status_code == 200
+        assert css_response.mimetype == "text/css"
+        assert js_response.status_code == 200
+        assert js_response.mimetype in {"text/javascript", "application/javascript"}
 
 
 class TestServerConfig:
