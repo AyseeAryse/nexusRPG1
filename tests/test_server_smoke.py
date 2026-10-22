@@ -33,16 +33,10 @@ class TestServerRoutes:
 
     @pytest.fixture
     def client(self):
-        """Создание тестового клиента Flask."""
-        import os
+        """Create a Flask test client using the application's real project paths."""
         from src.server.app import app
-        
-        # Устанавливаем правильные пути для шаблонов и статики
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        app.template_folder = os.path.join(base_dir, 'templates')
-        app.static_folder = os.path.join(base_dir, 'static')
-        app.config['TESTING'] = True
-        
+
+        app.config["TESTING"] = True
         with app.test_client() as client:
             yield client
 
