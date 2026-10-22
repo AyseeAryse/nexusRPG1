@@ -4,6 +4,7 @@ Game Engine - Core game state, mechanics, AI GM orchestration.
 import json
 import os
 import random
+import re
 import time
 import uuid
 import math
@@ -1472,9 +1473,24 @@ class GameEngine:
 
     # ========== SAVE / LOAD ==========
 
+    def _save_path(self, slot_name):
+        """Reject path traversal and OS-reserved names for save slots."""
+        if not isinstance(slot_name, str) or not re.fullmatch(r"[\\w .-]{1,80}", slot_name):
+            return None
+        if slot_name != slot_name.strip(" .") or ".." in slot_name:
+            return None
+        stem = slot_name.split(".")[0].upper()
+        if stem in {"CON", "PRN", "AUX", "NUL"} or re.fullmatch(r"(COM|LPT)[1-9]", stem):
+            return None
+        return os.path.join(self.saves_dir, f"{slot_name}.json")
+
+
     def save_game(self, slot_name: str = None) -> Dict:
         if not slot_name:
             slot_name = f"save_{self.state.id}_{int(time.time())}"
+        filepath = self._save_path(slot_name)
+        if filepath is None:
+            return {"error": "Недопустимое имя сохранения"}
         # End active combat/hack on save (can't serialize mid-action)
         if self.combat_engine.in_combat:
             self.combat_engine.end_combat()
@@ -1511,13 +1527,14 @@ class GameEngine:
             "v7_ship": self.ship.to_dict(),
             "v7_property": self.property.to_dict(),
         }
-        filepath = os.path.join(self.saves_dir, f"{slot_name}.json")
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(save_data, f, ensure_ascii=False, indent=2)
         return {"success": True, "slot_name": slot_name}
 
     def load_game(self, slot_name: str) -> Dict:
-        filepath = os.path.join(self.saves_dir, f"{slot_name}.json")
+        filepath = self._save_path(slot_name)
+        if filepath is None:
+            return {"error": "Недопустимое имя сохранения"}
         if not os.path.exists(filepath):
             return {"error": f"Сохранение '{slot_name}' не найдено"}
         with open(filepath, "r", encoding="utf-8") as f:
@@ -1577,7 +1594,9 @@ class GameEngine:
         return saves
 
     def delete_save(self, slot_name: str) -> Dict:
-        fp = os.path.join(self.saves_dir, f"{slot_name}.json")
+        fp = self._save_path(slot_name)
+        if fp is None:
+            return {"error": "Недопустимое имя сохранения"}
         if os.path.exists(fp):
             os.remove(fp)
             return {"success": True}
