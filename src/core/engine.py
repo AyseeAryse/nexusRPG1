@@ -414,12 +414,14 @@ class GameEngine:
 
     # ========== GAME ACTIONS ==========
 
-    def process_player_action(self, action: str) -> Dict:
+
+    def _prepare_player_action(self, action: str) -> Dict:
+        """Single source of truth for pre-AI action rules (normal and streamed)."""
         self.state.conversation_history.append({"role": "user", "content": action})
 
         # === V7: COMBAT ROUTING — if in combat, handle combat turn ===
         if self.combat_engine.in_combat:
-            return self._process_combat_turn(action)
+            return {"immediate": self._process_combat_turn(action)}
 
         # === V7: SUBSYSTEM TRIGGER — detect hacking/investigation/crafting/combat ===
         subsystem = detect_subsystem_trigger(action)
@@ -428,7 +430,7 @@ class GameEngine:
             subsystem_result = self._handle_subsystem_trigger(subsystem, action)
             # If combat was started, route to combat
             if subsystem_result and subsystem_result.get("combat_started"):
-                return subsystem_result
+                return {"immediate": subsystem_result}
 
         mechanical_result = self._check_mechanical_action(action)
 
@@ -513,6 +515,26 @@ class GameEngine:
                                                    self.state.character)
         if income_result:
             self.state.world_context["property_income"] = income_result
+
+        return {
+            "mechanical_result": mechanical_result,
+            "mech_action_result": mech_action_result,
+            "subsystem_result": subsystem_result,
+            "world_events": world_events,
+            "triggered_consequences": triggered_consequences,
+            "income_result": income_result,
+        }
+
+    def process_player_action(self, action: str) -> Dict:
+        prepared = self._prepare_player_action(action)
+        if "immediate" in prepared:
+            return prepared["immediate"]
+        mechanical_result = prepared["mechanical_result"]
+        mech_action_result = prepared["mech_action_result"]
+        subsystem_result = prepared["subsystem_result"]
+        world_events = prepared["world_events"]
+        triggered_consequences = prepared["triggered_consequences"]
+        income_result = prepared["income_result"]
 
         system_prompt = self._build_system_prompt(action, mechanical_result,
                                                    mech_action_result, subsystem_result)
