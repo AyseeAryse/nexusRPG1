@@ -17,3 +17,11 @@ archive/_internal_pyinstaller_artifact/
 archive/legacy_dupes_2026_08/_internal/
 _tmp_static_check*.log
 server_errors.log
+
+# Local mutable runtime data and private configuration
+config_data/*.json
+config_data/*.json.tmp
+database/
+logs/
+*.sqlite
+*.sqlite3
