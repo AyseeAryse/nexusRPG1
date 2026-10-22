@@ -50,3 +50,43 @@ def test_server_has_local_healthcheck():
         response = client.get("/health")
     assert response.status_code == 200
     assert response.get_json()["status"] == "ok"
+
+
+def test_normal_turn_uses_shared_immediate_result():
+    from unittest.mock import Mock
+    engine = GameEngine.__new__(GameEngine)
+    engine._prepare_player_action = Mock(return_value={"immediate": {"combat_started": True}})
+    assert engine.process_player_action("attack") == {"combat_started": True}
+    engine._prepare_player_action.assert_called_once_with("attack")
+
+
+def test_streaming_turn_uses_same_pre_and_post_ai_pipeline(monkeypatch):
+    import importlib
+    from unittest.mock import Mock
+
+    server = importlib.import_module("src.server.app")
+    fake = Mock()
+    fake._prepare_player_action.return_value = {
+        "mechanical_result": None,
+        "mech_action_result": None,
+        "subsystem_result": None,
+        "world_events": [],
+        "triggered_consequences": [],
+        "income_result": None,
+    }
+    fake.state.conversation_history = []
+    fake.state.world_context = {}
+    fake.ai.generate_stream.return_value = iter(["Привет"])
+    fake._parse_ai_response.return_value = {"narrative": "Привет", "state_changes": {}}
+    fake._finalize_player_action.return_value = {"level_up": None, "defeat": None}
+    fake._get_client_state.return_value = {}
+
+    monkeypatch.setattr(server, "engine", fake)
+    with server.app.test_client() as client:
+        response = client.post("/api/action/stream", json={"action": "осмотреться"})
+        assert response.status_code == 200
+        text = response.get_data(as_text=True)
+    assert '"type": "done"' in text
+    fake._prepare_player_action.assert_called_once_with("осмотреться")
+    fake._finalize_player_action.assert_called_once()
+    fake.state.world_sim.tick.assert_not_called()
