@@ -1,192 +1,45 @@
-# 🧪 Тестирование NexusRPG
+# Тестирование NexusRPG1
 
-## Запуск тестов
+## Локально (Python 3.11+)
 
-### Базовый запуск
 ```bash
-pip install pytest
-python -m pytest tests/ -v
+python -m pip install -r requirements.txt
+python scripts/validate_install.py
+python -m pytest -q
 ```
 
-### С покрытием кода
+Для быстрой проверки без установки всех опциональных AI/сборочных зависимостей:
+
 ```bash
-pip install pytest-cov
-pytest tests/ --cov=src --cov-report=html --cov-report=term
+python -m pip install Flask requests pytest
+python scripts/validate_install.py
+python -m pytest -q
 ```
 
-Отчёт откроется в `htmlcov/index.html`.
+## Что проверяют тесты
 
----
+- `test_smoke.py`: импорты и настройки существующих подсистем.
+- `test_engine_basic.py`: базовая логика, кубики и состояние движка.
+- `test_world_basic.py`: карта и компоненты процедурного мира.
+- `test_server_smoke.py`: импорт веб-сервера, корневая страница и работа `/health`.
+- `test_repo_integrity.py`: структура репозитория, переход на `game_data/active/`, чтение данных, предотвращение обхода каталогов сохранений.
 
-## Существующие тесты
+`scripts/validate_install.py` дополнительно проверяет наличие файлов, валидный синтаксис Python, JSON и отсутствие дублей имен активных файлов.
 
-| Файл | Описание | Статус |
-|------|----------|--------|
-| `tests/test_combat.py` | Тесты боевой системы | 🟡 В разработке |
-| `tests/test_generation.py` | Тесты генерации контента | 🟡 В разработке |
+## GitHub CI
 
----
+`.github/workflows/python-checks.yml` запускает базовые проверки на Pull Request и push в `main`, без реального вызова AI.
 
-## Написание новых тестов
+## Проверка запуска
 
-### Структура теста
-
-```python
-# tests/test_example.py
-import pytest
-from src.core.engine import GameState, DiceRoller
-
-class TestDiceRoller:
-    def test_roll_d20_returns_value_between_1_and_20(self):
-        roller = DiceRoller()
-        result = roller.roll("1d20")
-        assert 1 <= result <= 20
-    
-    def test_roll_with_modifier(self):
-        roller = DiceRoller()
-        result = roller.roll("1d20+5")
-        assert 6 <= result <= 25
-```
-
-### Запуск конкретного теста
 ```bash
-pytest tests/test_example.py::TestDiceRoller::test_roll_d20_returns_value_between_1_and_20 -v
+python -m src.server.app
 ```
 
----
+Ожидается локальный сервер на `http://127.0.0.1:8080`; `GET /health` должен отвечать `200 OK` с JSON `{"status":"ok"}`.
 
-## Моки для AI-бэкендов
+## Ограничения покрытия
 
-Для тестов без реальных API вызовов используйте моки:
+Зелёные тесты **не** доказывают корректность генерации нарратива, полноту квестовой логики, правильность всех JSON-правил, отсутствие гонок между пользователями и работоспособность Windows PyInstaller. См. [технический аудит](audits/REPOSITORY_AUDIT_2026-10-22.md).
 
-```python
-# tests/test_ai.py
-import pytest
-from unittest.mock import Mock, patch
-from src.ai.connector import AIConnector
-
-@patch('src.ai.connector.requests.post')
-def test_ai_connector_ollama(mock_post):
-    # Настройка мока
-    mock_response = Mock()
-    mock_response.json.return_value = {'response': 'Hello!'}
-    mock_post.return_value = mock_response
-    
-    connector = AIConnector(backend='ollama')
-    result = connector.generate("test prompt", [])
-    
-    assert result == 'Hello!'
-    mock_post.assert_called_once()
-```
-
----
-
-## Интеграционные тесты
-
-Для тестирования полного цикла используйте тестовый клиент Flask:
-
-```python
-# tests/test_integration.py
-import pytest
-from src.server.app import create_app
-
-@pytest.fixture
-def client():
-    app = create_app(testing=True)
-    with app.test_client() as client:
-        yield client
-
-def test_character_creation(client):
-    response = client.post('/api/character/create', json={
-        'name': 'Test Character',
-        'origin': 'techno_priest'
-    })
-    assert response.status_code == 200
-    data = response.get_json()
-    assert 'character_id' in data
-```
-
----
-
-## CI/CD (GitHub Actions)
-
-Пример workflow для автоматического тестирования:
-
-```yaml
-# .github/workflows/tests.yml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests/ --cov=src
-```
-
----
-
-## Отладка тестов
-
-### Режим отладки
-```bash
-pytest tests/ -v -s  # Показать print выводы
-pytest tests/ --pdb  # Остановиться при ошибке
-```
-
-### Логирование в тестах
-```python
-import logging
-
-def test_with_logging(caplog):
-    caplog.set_level(logging.INFO)
-    # ... код теста
-    assert "Expected log message" in caplog.text
-```
-
----
-
-## Покрытие кода
-
-### Минимальные требования
-- Core модули: >80%
-- Systems: >70%
-- AI connector: >90%
-- Server routes: >60%
-
-### Проверка покрытия
-```bash
-pytest tests/ --cov=src --cov-fail-under=70
-```
-
----
-
-## Производительность тестов
-
-### Запуск бенчмарков
-```bash
-pip install pytest-benchmark
-pytest tests/ --benchmark-only
-```
-
-### Профилирование
-```bash
-pytest tests/ --profile-svg=profile.svg
-```
-
----
-
-<div align="center">
-
-**Документация находится в разработке.** Помоги улучшить тесты — создай [Pull Request](https://github.com/AyseeAryse/NexusRPG/pulls)!
-
-</div>
+Перед обновлением версии делайте резервную копию локальных `saves/` и `database/`.
