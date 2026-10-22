@@ -47,17 +47,20 @@ class TestServerRoutes:
             yield client
 
     def test_health_endpoint(self, client):
-        """Эндпоинт /health отвечает."""
-        # Простой тест - проверяем что эндпоинт существует
-        response = client.get('/health')
-        # Эндпоинт должен существовать и возвращать какой-то ответ
-        assert response.status_code in [200, 404, 500]
+        """Health endpoint exists and reports a successful process check."""
+        response = client.get("/health")
+
+        assert response.status_code == 200
+        assert response.is_json
+        assert response.get_json() == {"status": "ok"}
 
     def test_root_endpoint(self, client):
-        """Корневой эндпоинт / отвечает."""
-        response = client.get('/')
-        # Может возвращать HTML или ошибку (шаблон может не найтись в тестах)
-        assert response.status_code in [200, 302, 404, 500]
+        """The main page is served successfully."""
+        response = client.get("/")
+
+        assert response.status_code == 200
+        assert response.mimetype == "text/html"
+        assert b"NEXUS RPG" in response.data
 
 
 class TestServerConfig:
