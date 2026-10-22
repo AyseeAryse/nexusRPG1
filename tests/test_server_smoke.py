@@ -34,13 +34,9 @@ class TestServerRoutes:
     @pytest.fixture
     def client(self):
         """Создание тестового клиента Flask."""
-        import os
         from src.server.app import app
-        
-        # Устанавливаем правильные пути для шаблонов и статики
-        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        app.template_folder = os.path.join(base_dir, 'templates')
-        app.static_folder = os.path.join(base_dir, 'static')
+
+        # Flask already has correct absolute template/static roots.
         app.config['TESTING'] = True
         
         with app.test_client() as client:
@@ -48,16 +44,15 @@ class TestServerRoutes:
 
     def test_health_endpoint(self, client):
         """Эндпоинт /health отвечает."""
-        # Простой тест - проверяем что эндпоинт существует
         response = client.get('/health')
-        # Эндпоинт должен существовать и возвращать какой-то ответ
-        assert response.status_code in [200, 404, 500]
+        assert response.status_code == 200
+        assert response.get_json() == {"status": "ok"}
 
     def test_root_endpoint(self, client):
         """Корневой эндпоинт / отвечает."""
         response = client.get('/')
-        # Может возвращать HTML или ошибку (шаблон может не найтись в тестах)
-        assert response.status_code in [200, 302, 404, 500]
+        assert response.status_code == 200
+        assert b"<html" in response.data.lower()
 
 
 class TestServerConfig:

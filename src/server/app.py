@@ -30,8 +30,8 @@ def handle_exception(e):
     logging.error(f"Unhandled exception: {e}\n{tb}")
     # Return JSON for API routes, HTML for pages
     if request.path.startswith("/api/"):
-        return jsonify({"error": f"Внутренняя ошибка сервера: {type(e).__name__}: {str(e)[:200]}"}), 500
-    return f"<h1>500 Internal Server Error</h1><pre>{type(e).__name__}: {str(e)[:200]}</pre>", 500
+        return jsonify({"error": "Внутренняя ошибка сервера"}), 500
+    return "<h1>500 Internal Server Error</h1>", 500
 
 @app.errorhandler(404)
 def handle_404(e):
@@ -56,6 +56,12 @@ def index():
     return render_template("index.html")
 
 # ---- API: Status & Settings ----
+@app.route("/health")
+def health():
+    """Liveness probe: no AI/backend connections required."""
+    return jsonify({"status": "ok"})
+
+
 @app.route("/api/status")
 def api_status():
     ai_status = engine.ai.check_connection()
@@ -159,104 +165,13 @@ def api_action_stream():
     if not action:
         return jsonify({"error": "Действие не указано"}), 400
 
-    engine.state.conversation_history.append({"role": "user", "content": action})
-
-    # === V7: COMBAT ROUTING — no AI streaming needed for combat ===
-    if engine.combat_engine.in_combat:
-        result = engine._process_combat_turn(action)
-        return jsonify(result)
-
-    # === V7: SUBSYSTEM TRIGGER (hacking/investigation/crafting/combat) ===
-    from src.systems.combat import detect_subsystem_trigger
-    subsystem = detect_subsystem_trigger(action)
-    subsystem_result = None
-    if subsystem:
-        subsystem_result = engine._handle_subsystem_trigger(subsystem, action)
-        if subsystem_result and subsystem_result.get("combat_started"):
-            return jsonify(subsystem_result)
-
-    # === V6: MECHANICAL ACTIONS (buy/sell/travel) ===
-    from src.systems.mechanics import detect_mechanical_action
-    mech_action = detect_mechanical_action(action)
-    mech_action_result = None
-    if mech_action:
-        mech_action_result = engine._handle_mechanical_action(mech_action)
-
-    # === DICE CHECK ===
-    dice_result = engine._check_mechanical_action(action)
-
-    # === CONVERSATION MANAGEMENT ===
-    from src.systems.mechanics import ConversationManager
-    ConversationManager.manage_history(engine.state.conversation_history)
-
-    # === WORLD SIMULATION TICK ===
-    tier = engine.get_player_influence_tier()["tier"]
-    engine.state.world_context = engine.state.world_sim.tick(
-        engine.state.game_time, engine.state.current_location, tier
-    )
-
-    # === WORLD TICKER — major events ===
-    world_events = engine.world_ticker.tick(engine.state)
-    if world_events:
-        engine.state.world_context["world_events"] = world_events
-        from src.content.v4_legacy import _game_time_to_hours
-        current_h = _game_time_to_hours(engine.state.game_time)
-        for we in world_events:
-            engine.world_effects.apply_event_effects(we, current_h)
-
-    # === CONSEQUENCES ===
-    turn = engine.state.world_sim.turn_count
-    triggered_consequences = engine.consequences.check_consequences(turn)
-    if triggered_consequences:
-        engine.state.world_context["consequences"] = triggered_consequences
-
-    # === V5: AUTO-REPUTATION ===
-    from src.content.v5_legacy import calculate_auto_reputation, apply_reputation_changes, get_reputation_summary
-    rep_changes = calculate_auto_reputation(action, engine.state.faction_reputation)
-    if rep_changes:
-        apply_reputation_changes(engine.state.faction_reputation, rep_changes)
-        engine.state.world_context["rep_changes"] = get_reputation_summary(rep_changes)
-
-    # === V5: WORLD EFFECTS ===
-    from src.content.v4_legacy import _game_time_to_hours as _gth
-    active_fx = engine.world_effects.get_active_effects_summary(_gth(engine.state.game_time))
-    if active_fx:
-        engine.state.world_context["active_world_effects"] = active_fx
-
-    # === V5: QUEST CHAIN OFFER ===
-    from src.content.v4_legacy import _game_time_to_hours as _gth2
-    current_hours = _gth2(engine.state.game_time)
-    if not hasattr(engine, '_last_chain_offer_h'):
-        engine._last_chain_offer_h = current_hours - random.randint(100, 200)
-    chain_cooldown = random.randint(120, 240)
-    if not engine.active_chain and (current_hours - engine._last_chain_offer_h) >= chain_cooldown:
-        from src.systems.quests import get_available_chains
-        available = get_available_chains(
-            engine.state.character.get("level", 1),
-            engine.state.character.get("credits", 0),
-            engine.state.faction_reputation)
-        available = [c for c in available if c["id"] not in engine.completed_chains]
-        if available:
-            engine.state.world_context["chain_offer"] = random.choice(available)
-            engine._last_chain_offer_h = current_hours
-
-    # === PROCEDURAL QUEST GEN ===
-    if not hasattr(engine, '_last_quest_gen_h'):
-        engine._last_quest_gen_h = current_hours - random.randint(30, 80)
-    quest_cooldown_h = random.randint(48, 120)
-    if (current_hours - engine._last_quest_gen_h) >= quest_cooldown_h and len(engine.state.active_quests) < 5:
-        pq = engine.quest_generator.generate_quest(
-            player_level=engine.state.character.get("level", 1),
-            location=engine.state.current_location,
-            faction_standings=engine.state.faction_reputation)
-        engine.state.active_quests.append(pq)
-        engine._last_quest_gen_h = current_hours
-        engine.state.world_context["new_quest"] = pq
-
-    # === V6: PROPERTY INCOME ===
-    income_result = engine.property_income.tick(current_hours, engine.property, engine.state.character)
-    if income_result:
-        engine.state.world_context["property_income"] = income_result
+    prepared = engine._prepare_player_action(action)
+    if "immediate" in prepared:
+        return jsonify(prepared["immediate"])
+    dice_result = prepared["mechanical_result"]
+    mech_action_result = prepared["mech_action_result"]
+    subsystem_result = prepared["subsystem_result"]
+    income_result = prepared["income_result"]
 
     # === BUILD SYSTEM PROMPT WITH ALL CONTEXT ===
     system_prompt = engine._build_system_prompt(action, dice_result, mech_action_result, subsystem_result)
@@ -284,35 +199,12 @@ def api_action_stream():
             full_response.append(token)
             yield f"data: {json.dumps({'type': 'token', 'data': token}, ensure_ascii=False)}\n\n"
 
-        # === POST-AI: Parse [STATE] block and apply changes ===
+        # Parse the same AI response format; apply time/XP/defeat in GameEngine.
         raw_response = "".join(full_response)
         parsed = engine._parse_ai_response(raw_response)
-        narrative = parsed["narrative"]
-
-        engine.state.conversation_history.append({"role": "assistant", "content": narrative})
-        engine.state.session_events.append({
-            "time": dict(engine.state.game_time),
-            "action": action[:100], "result": narrative[:100],
-        })
-
-        # Time advance (AI-determined or random)
-        time_mins = parsed.get("state_changes", {}).get("_custom_time", random.randint(5, 30))
-        engine._advance_time(minutes=time_mins)
-
-        # === V7: XP → LEVEL UP ===
-        from src.systems.combat import process_xp_gain
-        xp_to_add = parsed.get("state_changes", {}).get("_xp_to_add", 0)
-        level_up_info = None
-        if xp_to_add and xp_to_add > 0:
-            level_up_info = process_xp_gain(engine.state.character, xp_to_add)
-
-        # === V7: HP=0 DEFEAT (fail-forward) ===
-        from src.systems.combat import apply_defeat
-        defeat_result = None
-        if engine.state.character.get("current_hp", 1) <= 0:
-            defeat_result = apply_defeat(
-                engine.state.character, engine.state.inventory,
-                engine.state.game_time, engine.state.current_location)
+        finalized = engine._finalize_player_action(action, parsed)
+        level_up_info = finalized["level_up"]
+        defeat_result = finalized["defeat"]
 
         # === Send final state with ALL info ===
         done_data = {

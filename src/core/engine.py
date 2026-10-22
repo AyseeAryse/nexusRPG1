@@ -4,6 +4,7 @@ Game Engine - Core game state, mechanics, AI GM orchestration.
 import json
 import os
 import random
+import re
 import time
 import uuid
 import math
@@ -413,12 +414,14 @@ class GameEngine:
 
     # ========== GAME ACTIONS ==========
 
-    def process_player_action(self, action: str) -> Dict:
+
+    def _prepare_player_action(self, action: str) -> Dict:
+        """Single source of truth for pre-AI action rules (normal and streamed)."""
         self.state.conversation_history.append({"role": "user", "content": action})
 
         # === V7: COMBAT ROUTING — if in combat, handle combat turn ===
         if self.combat_engine.in_combat:
-            return self._process_combat_turn(action)
+            return {"immediate": self._process_combat_turn(action)}
 
         # === V7: SUBSYSTEM TRIGGER — detect hacking/investigation/crafting/combat ===
         subsystem = detect_subsystem_trigger(action)
@@ -427,7 +430,7 @@ class GameEngine:
             subsystem_result = self._handle_subsystem_trigger(subsystem, action)
             # If combat was started, route to combat
             if subsystem_result and subsystem_result.get("combat_started"):
-                return subsystem_result
+                return {"immediate": subsystem_result}
 
         mechanical_result = self._check_mechanical_action(action)
 
@@ -513,10 +516,17 @@ class GameEngine:
         if income_result:
             self.state.world_context["property_income"] = income_result
 
-        system_prompt = self._build_system_prompt(action, mechanical_result,
-                                                   mech_action_result, subsystem_result)
-        ai_response = self.ai.generate(system_prompt=system_prompt, messages=self.state.conversation_history[-12:])
-        parsed = self._parse_ai_response(ai_response)
+        return {
+            "mechanical_result": mechanical_result,
+            "mech_action_result": mech_action_result,
+            "subsystem_result": subsystem_result,
+            "world_events": world_events,
+            "triggered_consequences": triggered_consequences,
+            "income_result": income_result,
+        }
+
+    def _finalize_player_action(self, action: str, parsed: Dict) -> Dict:
+        """Apply the shared post-AI effects once for normal and streamed turns."""
         self.state.conversation_history.append({"role": "assistant", "content": parsed["narrative"]})
         self.state.session_events.append({
             "time": dict(self.state.game_time),
@@ -539,6 +549,27 @@ class GameEngine:
                 self.state.character, self.state.inventory,
                 self.state.game_time, self.state.current_location
             )
+
+        return {"level_up": level_up_info, "defeat": defeat_result}
+
+    def process_player_action(self, action: str) -> Dict:
+        prepared = self._prepare_player_action(action)
+        if "immediate" in prepared:
+            return prepared["immediate"]
+        mechanical_result = prepared["mechanical_result"]
+        mech_action_result = prepared["mech_action_result"]
+        subsystem_result = prepared["subsystem_result"]
+        world_events = prepared["world_events"]
+        triggered_consequences = prepared["triggered_consequences"]
+        income_result = prepared["income_result"]
+
+        system_prompt = self._build_system_prompt(action, mechanical_result,
+                                                   mech_action_result, subsystem_result)
+        ai_response = self.ai.generate(system_prompt=system_prompt, messages=self.state.conversation_history[-12:])
+        parsed = self._parse_ai_response(ai_response)
+        finalized = self._finalize_player_action(action, parsed)
+        level_up_info = finalized["level_up"]
+        defeat_result = finalized["defeat"]
 
         return {
             "narrative": parsed["narrative"],
@@ -1472,9 +1503,24 @@ class GameEngine:
 
     # ========== SAVE / LOAD ==========
 
+    def _save_path(self, slot_name):
+        """Reject path traversal and OS-reserved names for save slots."""
+        if not isinstance(slot_name, str) or not re.fullmatch(r"[\w .-]{1,80}", slot_name):
+            return None
+        if slot_name != slot_name.strip(" .") or ".." in slot_name:
+            return None
+        stem = slot_name.split(".")[0].upper()
+        if stem in {"CON", "PRN", "AUX", "NUL"} or re.fullmatch(r"(COM|LPT)[1-9]", stem):
+            return None
+        return os.path.join(self.saves_dir, f"{slot_name}.json")
+
+
     def save_game(self, slot_name: str = None) -> Dict:
         if not slot_name:
             slot_name = f"save_{self.state.id}_{int(time.time())}"
+        filepath = self._save_path(slot_name)
+        if filepath is None:
+            return {"error": "Недопустимое имя сохранения"}
         # End active combat/hack on save (can't serialize mid-action)
         if self.combat_engine.in_combat:
             self.combat_engine.end_combat()
@@ -1511,13 +1557,14 @@ class GameEngine:
             "v7_ship": self.ship.to_dict(),
             "v7_property": self.property.to_dict(),
         }
-        filepath = os.path.join(self.saves_dir, f"{slot_name}.json")
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(save_data, f, ensure_ascii=False, indent=2)
         return {"success": True, "slot_name": slot_name}
 
     def load_game(self, slot_name: str) -> Dict:
-        filepath = os.path.join(self.saves_dir, f"{slot_name}.json")
+        filepath = self._save_path(slot_name)
+        if filepath is None:
+            return {"error": "Недопустимое имя сохранения"}
         if not os.path.exists(filepath):
             return {"error": f"Сохранение '{slot_name}' не найдено"}
         with open(filepath, "r", encoding="utf-8") as f:
@@ -1577,7 +1624,9 @@ class GameEngine:
         return saves
 
     def delete_save(self, slot_name: str) -> Dict:
-        fp = os.path.join(self.saves_dir, f"{slot_name}.json")
+        fp = self._save_path(slot_name)
+        if fp is None:
+            return {"error": "Недопустимое имя сохранения"}
         if os.path.exists(fp):
             os.remove(fp)
             return {"success": True}
