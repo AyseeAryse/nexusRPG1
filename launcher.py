@@ -747,7 +747,7 @@ def main():
 
 
 def check_ollama_auto():
-    """Auto-install Ollama without asking (for .exe mode)."""
+    """Check Ollama; never run a downloaded installer without user confirmation."""
     step_header(3, "OLLAMA (AI СЕРВЕР)")
 
     ollama_path = shutil.which("ollama")
@@ -755,10 +755,11 @@ def check_ollama_auto():
         status("✓", f"Ollama найден: {ollama_path}", Colors.GREEN)
         return check_ollama_running()
 
-    status("→", "Ollama не найден. Скачиваю автоматически...", Colors.YELLOW)
+    status("→", "Ollama не найден. Установите его вручную: https://ollama.com/download", Colors.YELLOW)
 
     if platform.system() == "Windows":
-        return download_and_install_ollama()
+        webbrowser.open("https://ollama.com/download")
+        return False
     elif platform.system() == "Linux":
         try:
             status("→", "Устанавливаю Ollama...", Colors.YELLOW)
