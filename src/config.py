@@ -9,6 +9,14 @@ from pathlib import Path
 # Get the project root directory (parent of src/)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+# Optional .env support (works with requirements.txt; shell env retains priority).
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    pass
+else:
+    load_dotenv(PROJECT_ROOT / ".env", override=False)
+
 
 def _launcher_preferences():
     """Load optional local settings without modifying tracked Python source."""
