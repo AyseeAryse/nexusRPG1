@@ -90,3 +90,15 @@ def test_streaming_turn_uses_same_pre_and_post_ai_pipeline(monkeypatch):
     fake._prepare_player_action.assert_called_once_with("осмотреться")
     fake._finalize_player_action.assert_called_once()
     fake.state.world_sim.tick.assert_not_called()
+
+
+def test_save_roundtrip_offline(tmp_path):
+    """A new character state can be saved, reloaded and deleted safely."""
+    engine = GameEngine(saves_dir=str(tmp_path / "saves"), db_dir=str(tmp_path / "database"))
+    result = engine.save_game("roundtrip")
+    assert result.get("success") is True
+    assert (tmp_path / "saves" / "roundtrip.json").is_file()
+    loaded = engine.load_game("roundtrip")
+    assert loaded.get("success") is True
+    assert engine.delete_save("roundtrip").get("success") is True
+    assert not (tmp_path / "saves" / "roundtrip.json").exists()
