@@ -30,8 +30,8 @@ def handle_exception(e):
     logging.error(f"Unhandled exception: {e}\n{tb}")
     # Return JSON for API routes, HTML for pages
     if request.path.startswith("/api/"):
-        return jsonify({"error": f"Внутренняя ошибка сервера: {type(e).__name__}: {str(e)[:200]}"}), 500
-    return f"<h1>500 Internal Server Error</h1><pre>{type(e).__name__}: {str(e)[:200]}</pre>", 500
+        return jsonify({"error": "Внутренняя ошибка сервера"}), 500
+    return "<h1>500 Internal Server Error</h1>", 500
 
 @app.errorhandler(404)
 def handle_404(e):
@@ -56,6 +56,12 @@ def index():
     return render_template("index.html")
 
 # ---- API: Status & Settings ----
+@app.route("/health")
+def health():
+    """Liveness probe: no AI/backend connections required."""
+    return jsonify({"status": "ok"})
+
+
 @app.route("/api/status")
 def api_status():
     ai_status = engine.ai.check_connection()
