@@ -62,6 +62,16 @@ class TestServerRoutes:
         assert response.mimetype == "text/html"
         assert b"NEXUS RPG" in response.data
 
+    def test_static_assets_are_served(self, client):
+        """The stylesheet and browser application use their real repository paths."""
+        css_response = client.get("/static/css/style.css")
+        js_response = client.get("/static/js/app.js")
+
+        assert css_response.status_code == 200
+        assert css_response.mimetype == "text/css"
+        assert js_response.status_code == 200
+        assert js_response.mimetype in {"text/javascript", "application/javascript"}
+
 
 class TestServerConfig:
     """Тесты конфигурации сервера."""
