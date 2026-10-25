@@ -74,6 +74,7 @@ nexusRPG1/
 - [Текущий технический аудит](docs/audits/REPOSITORY_AUDIT_2026-10-22.md)
 - [Архитектура фактического приложения](docs/ARCHITECTURE.md)
 - [Тестирование](docs/TESTING.md)
+- [Проект происхождения и географии раннего расселения — НЕ КАНОН](docs/worldbuilding/HISTORICAL_ORIGINS_DRAFT.md)
 - [Истоки и миграции — WB-071](docs/worldbuilding/HISTORY_AND_MIGRATION.md)
 - [Политические системы — WB-069](docs/worldbuilding/POLITICAL_SYSTEMS.md)
 - [Гражданское общество и корпорации — WB-068](docs/worldbuilding/CIVIL_SOCIETY_AND_ECONOMY.md)
