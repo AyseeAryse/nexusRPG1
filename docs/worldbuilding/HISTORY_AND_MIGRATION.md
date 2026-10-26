@@ -1,7 +1,7 @@
 # NexusRPG — истоки, расселение и культурная дифференциация (HIST-ORIGIN, v0.33)
 
 **Решение:** 25.10.2026. **КАНОН общей модели H-C (WB-071), смешанного освоения WB-072, земного происхождения OR-A (WB-073) и исторического диапазона 400–800 лет T-B (WB-074)**; точные даты, события, миграции, численности, государственные истоки и названия — **ГИПОТЕЗЫ/ПРЕДЛОЖЕНИЯ**.
-**Связи:** [DECISIONS.md](DECISIONS.md), [WORLD_BIBLE.md](WORLD_BIBLE.md), [POLITICAL_SYSTEMS.md](POLITICAL_SYSTEMS.md), [POLITICAL_ACTORS_DRAFT.md](POLITICAL_ACTORS_DRAFT.md), [STELLAR_TRAVEL_AND_COMMS.md](STELLAR_TRAVEL_AND_COMMS.md).
+**Связи:** [DECISIONS.md](DECISIONS.md), [WORLD_BIBLE.md](WORLD_BIBLE.md), [POLITICAL_SYSTEMS.md](POLITICAL_SYSTEMS.md), [POLITICAL_ACTORS_DRAFT.md](POLITICAL_ACTORS_DRAFT.md), [STELLAR_TRAVEL_AND_COMMS.md](STELLAR_TRAVEL_AND_COMMS.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md) (WB-075/076).
 
 ## 1. Принятый качественный фундамент H-C [КАНОН WB-071]
 
