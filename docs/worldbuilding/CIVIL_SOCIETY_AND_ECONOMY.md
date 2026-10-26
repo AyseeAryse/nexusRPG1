@@ -2,7 +2,7 @@
 
 **Статус:** КАНОН **качественной социальной архитектуры WB-068**; профили обществ — утверждённые **типы**, а не именованные поселения. Примеры, финансовые доли, конкретные институты и нормы права не канонизированы.
 **Дата решения:** 25.10.2026.
-**Связанные основы:** [WORLD_BIBLE.md](WORLD_BIBLE.md), [DECISIONS.md](DECISIONS.md), [STELLAR_TRAVEL_AND_COMMS.md](STELLAR_TRAVEL_AND_COMMS.md), [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
+**Связанные основы:** [WORLD_BIBLE.md](WORLD_BIBLE.md), [DECISIONS.md](DECISIONS.md), [STELLAR_TRAVEL_AND_COMMS.md](STELLAR_TRAVEL_AND_COMMS.md), [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md) (канон WB-075/076).
 
 ## 1. Социальная архитектура [КАНОН WB-068]
 
