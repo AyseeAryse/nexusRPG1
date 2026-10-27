@@ -1,7 +1,7 @@
 # NexusRPG — истоки, расселение и культурная дифференциация (HIST-ORIGIN, v0.33)
 
 **Решение:** 25.10.2026. **КАНОН общей модели H-C (WB-071), смешанного освоения WB-072, земного происхождения OR-A (WB-073) и исторического диапазона 400–800 лет T-B (WB-074)**; точные даты, события, миграции, численности, государственные истоки и названия — **ГИПОТЕЗЫ/ПРЕДЛОЖЕНИЯ**.
-**Связи:** [DECISIONS.md](DECISIONS.md), [WORLD_BIBLE.md](WORLD_BIBLE.md), [POLITICAL_SYSTEMS.md](POLITICAL_SYSTEMS.md), [POLITICAL_ACTORS_DRAFT.md](POLITICAL_ACTORS_DRAFT.md), [STELLAR_TRAVEL_AND_COMMS.md](STELLAR_TRAVEL_AND_COMMS.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md) (WB-075/076).
+**Связи:** [DECISIONS.md](DECISIONS.md), [WORLD_BIBLE.md](WORLD_BIBLE.md), [POLITICAL_SYSTEMS.md](POLITICAL_SYSTEMS.md), [POLITICAL_ACTORS_DRAFT.md](POLITICAL_ACTORS_DRAFT.md), [STELLAR_TRAVEL_AND_COMMS.md](STELLAR_TRAVEL_AND_COMMS.md), [CALENDAR_AND_AI_GM_ALIGNMENT_DRAFT.md](CALENDAR_AND_AI_GM_ALIGNMENT_DRAFT.md) (CALENDAR-P0, **неутверждённые численные эпохи и аудит legacy-вызовов**), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md) (WB-075/076).
 
 **EARTH-EA3-HISTORY (предложение, 27.10.2026):** возможная последовательность образования трёх земных альянсов описана в [EARTH_ALLIANCES_HISTORY_DRAFT.md](EARTH_ALLIANCES_HISTORY_DRAFT.md). Недатированные EH-0…EH-5 и EA-H1/2/3 — **не канон**, не изменяют утверждённую H-C/WB-071, не доказывают современные границы будущих союзов и не фиксируют заселение Марса.
 
@@ -88,6 +88,8 @@
 **WB-073 утверждает OR-A:** Земля — историческая родина людей, а ранняя Солнечная система развилась как разнородная хозяйственная и культурная среда до широкого практического FTL. Это **не утверждает современный единый земной центр власти**. Сценарные возможности Луны, Марса, малых тел и первичных/вторичных колоний описаны в [HISTORICAL_ORIGINS_DRAFT.md](HISTORICAL_ORIGINS_DRAFT.md) и **не утверждены как произошедшие события**.
 
 **Открыты:** нынешний политический и экологический статус Земли, точные поселения и первые колонии, иные разумные виды, реальные волны миграции, карта, государственные образования и конкретные события. Канон **WB-071/072/073** не расширять без утверждения.
+
+**CALENDAR-P0 (27.10.2026, ПРЕДЛОЖЕНИЕ, НЕ КАНОН):** [CALENDAR_AND_AI_GM_ALIGNMENT_DRAFT.md](CALENDAR_AND_AI_GM_ALIGNMENT_DRAFT.md) содержит сравнение `CAL-A/B/C`: рекомендовано **не отменять WB-074** и выбрать более позднюю земную дату. Годы **3200** игрового настоящего / **2600** массовой FTL-экспансии — **только иллюстративный пример**, а не принятое событие. В коде отдельно выявлено противоречие GM-промпта FTL/магии и календарных счётчиков `2387`; исполняемый код не менялся.
 
 ## 6B. HIST-TEMPO — выбран T-B [КАНОН РАМКИ WB-074; КОНКРЕТНЫЕ ДАТЫ НЕ КАНОН]
 
