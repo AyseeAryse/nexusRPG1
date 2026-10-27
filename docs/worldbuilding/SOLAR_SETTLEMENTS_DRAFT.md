@@ -1,5 +1,7 @@
 # NexusRPG — населённая Солнечная система: Земля, Луна, Марс и дальнейшее освоение (SOLAR-SETTLEMENTS)
 
+**АКТУАЛИЗАЦИЯ WB-080:** прежний масштаб SOL-S2 в части нескольких развитых поселений/пояса **сужен**. КАНОН: **2387**, Земля, **как минимум одна постоянная колония Луны**, собственная марсианская общественная жизнь; дополнительные города/пояс/внешние базы — предложения, не автоматически населены. Детали старых вариантов SOL-S1/2/3 остались как исторические альтернативы. См. [COMPACT_2387_SETTING.md](COMPACT_2387_SETTING.md).
+
 **Редакция:** v0.2 · 27.10.2026.
 **СТАТУС: SOL-S2 ПРИНЯТ КАК КАЧЕСТВЕННАЯ РАМКА WB-078; конкретные поселения, города, границы, численность, даты и маршруты — ПРЕДЛОЖЕНИЯ, НЕ КАНОН.** Пользователь одобрил продолжение проработки EARTH-PRESENT/SOLAR-SETTLEMENTS, но **не утверждал** реальное население Луны, Марса, Цереры или политические границы. Новых WB-ID нет.
 **Связанные документы:** [WORLD_BIBLE.md](WORLD_BIBLE.md), [DECISIONS.md](DECISIONS.md), [SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md](SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md), [EARTH_PRESENT_DRAFT.md](EARTH_PRESENT_DRAFT.md), [EARTH_ALLIANCES_HISTORY_DRAFT.md](EARTH_ALLIANCES_HISTORY_DRAFT.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md), [LOCAL_ECONOMY_AND_RIGHTS_DRAFT.md](LOCAL_ECONOMY_AND_RIGHTS_DRAFT.md).
