@@ -74,6 +74,7 @@ nexusRPG1/
 - [Текущий технический аудит](docs/audits/REPOSITORY_AUDIT_2026-10-22.md)
 - [Архитектура фактического приложения](docs/ARCHITECTURE.md)
 - [Тестирование](docs/TESTING.md)
+- [Современная Земля: варианты политики, экологии и первый игровой город — ПРОЕКТ](docs/worldbuilding/EARTH_PRESENT_DRAFT.md)
 - [Земля, Солнечная система и освоенный Млечный Путь — фокус WB-077](docs/worldbuilding/SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md)
 - [Земля как историческая родина — WB-073; детали географии — ПРОЕКТ](docs/worldbuilding/HISTORICAL_ORIGINS_DRAFT.md)
 - [Местная экономика, права и независимые общества — ПРЕДЛОЖЕНИЕ](docs/worldbuilding/LOCAL_ECONOMY_AND_RIGHTS_DRAFT.md)
