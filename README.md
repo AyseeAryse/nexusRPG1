@@ -77,6 +77,7 @@ nexusRPG1/
 - [История трёх земных альянсов и их отношения с Солнечной системой — ПРОЕКТ](docs/worldbuilding/EARTH_ALLIANCES_HISTORY_DRAFT.md)
 - [Современная Земля: варианты политики, экологии и первый игровой город — ПРОЕКТ](docs/worldbuilding/EARTH_PRESENT_DRAFT.md)
 - [Заселённость Земли, Луны, Марса и Солнечной системы — ПРОЕКТ](docs/worldbuilding/SOLAR_SETTLEMENTS_DRAFT.md)
+- [Первый игровой сценарий Земля — Луна — ПРЕДЛОЖЕНИЕ](docs/worldbuilding/EARTH_MOON_VERTICAL_SLICE_DRAFT.md)
 - [Земля, Солнечная система и освоенный Млечный Путь — фокус WB-077](docs/worldbuilding/SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md)
 - [Земля как историческая родина — WB-073; детали географии — ПРОЕКТ](docs/worldbuilding/HISTORICAL_ORIGINS_DRAFT.md)
 - [Местная экономика, права и независимые общества — ПРЕДЛОЖЕНИЕ](docs/worldbuilding/LOCAL_ECONOMY_AND_RIGHTS_DRAFT.md)
