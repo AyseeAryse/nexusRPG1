@@ -79,6 +79,7 @@ nexusRPG1/
 - [История трёх земных альянсов и их отношения с Солнечной системой — ПРОЕКТ](docs/worldbuilding/EARTH_ALLIANCES_HISTORY_DRAFT.md)
 - [Токио — выбранный стартовый регион WB-079; устройство города — проект](docs/worldbuilding/EARTH_PRESENT_DRAFT.md)
 - [Заселённость Земли, Луны, Марса и Солнечной системы — ПРОЕКТ](docs/worldbuilding/SOLAR_SETTLEMENTS_DRAFT.md)
+- [Две новые экзопланеты у соседних звёзд — Кайр и Нерея, ПРЕДЛОЖЕНИЕ](docs/worldbuilding/NEARBY_EXOPLANETS_DRAFT.md)
 - [Новый компактный мир 2387 — КАНОН WB-080, редкий FTL](docs/worldbuilding/COMPACT_2387_SETTING.md)
 - [Календарь и согласование AI GM с каноном — аудит/предложение](docs/worldbuilding/CALENDAR_AND_AI_GM_ALIGNMENT_DRAFT.md)
 - [Первый игровой сценарий Земля — Луна — ПРЕДЛОЖЕНИЕ](docs/worldbuilding/EARTH_MOON_VERTICAL_SLICE_DRAFT.md)
