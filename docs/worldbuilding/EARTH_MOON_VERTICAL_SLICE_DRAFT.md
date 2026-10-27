@@ -1,7 +1,7 @@
 # NexusRPG — первый сквозной игровой сценарий Земля ↔ Луна (EARTH-MOON-VERTICAL-SLICE)
 
 **Редакция:** 0.1 · 27.10.2026. **СТАТУС: ПРОЕКТ / ПРЕДЛОЖЕНИЕ, НЕ РЕАЛИЗОВАННЫЙ КВЕСТ И НЕ КАНОН ГОРОДА/ЛУННОГО ОБЪЕКТА.**
-**КАНОН КАЧЕСТВЕННОЙ РАМКИ:** WB-077 Earth-first; WB-078 (E-A3/ECO-A/SOL-S2, если записан в [DECISIONS.md](DECISIONS.md)), но не конкретные названия, границы, политические органы, население или сроки рейсов.
+**КАНОН КАЧЕСТВЕННОЙ РАМКИ:** WB-077 Earth-first; WB-078 (E-A3/ECO-A/SOL-S2, **качественно утверждены** в [DECISIONS.md](DECISIONS.md)), но не конкретные названия, границы, политические органы, население или сроки рейсов.
 **Связи:** [EARTH_PRESENT_DRAFT.md](EARTH_PRESENT_DRAFT.md), [SOLAR_SETTLEMENTS_DRAFT.md](SOLAR_SETTLEMENTS_DRAFT.md), [SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md](SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md), [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md).
 
 ## 1. Обнаруженный код и точка расхождения [ПРОВЕРЕНО ЧТЕНИЕМ GitHub MAIN 27.10.2026; НЕ E2E-ТЕСТ]
