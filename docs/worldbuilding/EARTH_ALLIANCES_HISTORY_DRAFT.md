@@ -1,10 +1,10 @@
 # NexusRPG — историческое формирование трёх земных альянсов (EARTH-ALLIANCES-HISTORY)
 
-**Редакция:** 0.1 · 27.10.2026.
+**Редакция:** 0.2 · 27.10.2026.
 **СТАТУС ВСЕГО ФАЙЛА: ПРЕДЛОЖЕНИЕ / ГИПОТЕЗЫ; НЕ КАНОН СУЩЕСТВОВАНИЯ ИМЕННЫХ АЛЬЯНСОВ И ИСТОРИЧЕСКИХ СОБЫТИЙ.**
 **Ввод пользователя:** на Земле предпочтительны **примерно три крупных альянса** с историческими ориентирами **США, РФ, Китай / Восточная Азия**, а также самостоятельные и некоторые раздробленные региональные образования. Это предпочтение **не является утверждением** их юридических имён, границ, нынешних политических режимов и фактического состава союзов. Новый WB-номер не присваивается.
 **КАНОН-ОГРАНИЧЕНИЯ:** WB-073 Земля — историческая родина человечества; WB-072 индустриальная инфраструктура внутри Солнечной системы возникла до массовой F1/T3-экспансии; WB-071 несколько волн миграции и многоцентровость; WB-074 период **400–800 лет от начала широкой практической межзвёздной экспансии** до игры (не длительность всех земных институтов); WB-077 Земля приоритет игрового знакомства, Солнечная система и освоенная часть Млечного Пути сохраняются; WB-068/069 определяют пределы корпоративной/политической власти; WB-075/076 ограничивают дальнюю торговлю и типы населённых систем. F1/T3, C2, B1/D1, FS-01…06, ограниченность магии и CAD неизменны.
-**Связанные документы:** [EARTH_PRESENT_DRAFT.md](EARTH_PRESENT_DRAFT.md) (E-A3, пилот M-01), [SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md](SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md), [HISTORY_AND_MIGRATION.md](HISTORY_AND_MIGRATION.md), [HISTORICAL_ORIGINS_DRAFT.md](HISTORICAL_ORIGINS_DRAFT.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md), [POLITICAL_ACTORS_DRAFT.md](POLITICAL_ACTORS_DRAFT.md), [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
+**Связанные документы:** [EARTH_PRESENT_DRAFT.md](EARTH_PRESENT_DRAFT.md) (E-A3, пилот M-01), [SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md](SOLAR_SYSTEM_AND_GALACTIC_SCOPE.md), [SOLAR_SETTLEMENTS_DRAFT.md](SOLAR_SETTLEMENTS_DRAFT.md) (альтернативы населения S1/S2/S3, **не факт заселения**), [HISTORY_AND_MIGRATION.md](HISTORY_AND_MIGRATION.md), [HISTORICAL_ORIGINS_DRAFT.md](HISTORICAL_ORIGINS_DRAFT.md), [ECONOMIC_STRUCTURE.md](ECONOMIC_STRUCTURE.md), [POLITICAL_ACTORS_DRAFT.md](POLITICAL_ACTORS_DRAFT.md), [OPEN_QUESTIONS.md](OPEN_QUESTIONS.md).
 
 ## 1. Что именно представляют три альянса [ПРЕДЛОЖЕНИЕ]
 
