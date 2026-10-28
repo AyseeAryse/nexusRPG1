@@ -73,6 +73,26 @@ def test_partial_updates_preserve_country_but_moving_city_clears_it():
     assert back["country"] == "Япония"
 
 
+
+def test_partial_planet_change_clears_stale_tokyo_levels():
+    before = merge_location(GameState().current_location, {"place": "Мастерская"})
+    after = merge_location(before, {"planet": "Марс"})
+    assert after["country"] is None
+    assert after["city"] == ""
+    assert after["district"] == ""
+    assert after["place"] == ""
+    assert before["city"] == "Нью-Токио"
+
+
+def test_partial_city_change_clears_old_district_and_place():
+    before = merge_location(GameState().current_location, {"place": "Мастерская"})
+    after = merge_location(before, {"city": "Нью-Йорк"})
+    assert after["planet"] == "Земля"
+    assert after["country"] is None
+    assert after["district"] == ""
+    assert after["place"] == ""
+
+
 def test_starting_origins_keep_geographic_hierarchy():
     engine = GameEngine.__new__(GameEngine)
     engine.state = GameState()
