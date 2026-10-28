@@ -7,6 +7,7 @@ import random
 from pathlib import Path
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from src.core.engine import GameEngine
+from src.world.location import normalize_location, merge_location
 from src.systems.game_systems import (QuestTracker, FactionSystem, PsychologySystem,
                                       PerkSystem, LevelUpSystem, CraftingSystem,
                                       LocationEvents)
@@ -706,6 +707,7 @@ def api_map_move():
     place = data.get("place", "")
 
     loc = engine.state.current_location
+    previous_loc = dict(loc)
 
     # If moving to another planet — check routes, advance time
     if planet and planet != loc.get("planet"):
@@ -723,10 +725,10 @@ def api_map_move():
         new_city = city or (cities[0] if cities else "?")
         new_districts = engine.galaxy_map.list_districts(planet, new_city)
         new_district = district or (new_districts[0]["name"] if new_districts else "?")
-        engine.state.current_location = {
+        engine.state.current_location = normalize_location({
             "planet": planet, "city": new_city,
             "district": new_district, "place": place,
-        }
+        })
         # Space travel event
         space_event = LocationEvents.on_planet_travel()
         # Auto-spawn NPC at new location
@@ -758,7 +760,12 @@ def api_map_move():
         travel_event = LocationEvents.on_district_change(security)
 
     loc["place"] = place
-    engine.state.current_location = loc
+    # Do not carry Japan across an intra-Earth city change.
+    engine.state.current_location = merge_location(previous_loc, {
+        "planet": loc["planet"], "city": loc["city"],
+        "district": loc["district"], "place": loc["place"],
+    })
+    loc = engine.state.current_location
 
     # Maybe auto-spawn NPC in new district (30% chance)
     import random
