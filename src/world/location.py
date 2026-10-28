@@ -38,10 +38,22 @@ def merge_location(current: Dict, changes: Dict) -> Dict:
     """
     result = dict(current)
     result.update(changes)
-    moved_city = (
-        result.get("planet") != current.get("planet")
-        or result.get("city") != current.get("city")
-    )
-    if moved_city and "country" not in changes:
+    planet_changed = result.get("planet") != current.get("planet")
+    city_changed = result.get("city") != current.get("city")
+
+    # A partial AI location update must not carry Tokyo's district to Mars,
+    # or the industrial district of one city into another city.
+    if planet_changed:
+        for key in ("city", "district", "place"):
+            if key not in changes:
+                result[key] = ""
+    elif city_changed:
+        for key in ("district", "place"):
+            if key not in changes:
+                result[key] = ""
+    elif result.get("district") != current.get("district") and "place" not in changes:
+        result["place"] = ""
+
+    if (planet_changed or city_changed) and "country" not in changes:
         result.pop("country", None)
     return normalize_location(result, previous=current)
