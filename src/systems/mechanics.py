@@ -9,6 +9,7 @@ Now they enforce actual rules.
 import random
 import re
 from typing import Dict, List, Optional, Tuple
+from src.world.location import normalize_location
 
 
 # ════════════════════════════════════════════════════════════
@@ -274,12 +275,12 @@ class TravelSystem:
                 encounter = random.choice(enc_candidates)
 
         # New location
-        new_loc = {
+        new_loc = normalize_location({
             "planet": planet,
             "city": dest_city,
             "district": dest_district,
             "place": dest_place,
-        }
+        }, previous=current_loc)
 
         return {
             "success": True,
@@ -356,12 +357,12 @@ class TravelSystem:
         }
         dest_info = PLANET_DEFAULTS.get(dest_planet, {"city": dest_planet, "district": "Центр"})
 
-        new_loc = {
+        new_loc = normalize_location({
             "planet": dest_planet,
             "city": dest_info["city"],
             "district": dest_info["district"],
             "place": "",
-        }
+        })
 
         return {
             "success": True,

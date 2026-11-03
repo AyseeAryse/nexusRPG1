@@ -18,6 +18,7 @@ from src.content.v4_legacy import (
 )
 from src.content.v3_legacy import get_all_shop_items_v3
 from src.world import WorldSimulator, NPCRegistry, SPEECH_STYLES, GalaxyMap
+from src.world.location import normalize_location, merge_location
 from src.systems import (QuestTracker, FactionSystem, PsychologySystem,
                           PerkSystem, LevelUpSystem, CraftingSystem,
                           LocationEvents)
@@ -124,10 +125,10 @@ class GameState:
         self.created_at = datetime.now().isoformat()
         self.updated_at = self.created_at
         self.character: Dict = {}
-        self.current_location: Dict = {
+        self.current_location: Dict = normalize_location({
             "planet": "Земля", "city": "Нью-Токио",
             "district": "Индустриальный коридор", "place": ""
-        }
+        })
         self.game_time: Dict = {"year": 2387, "month": 3, "day": 15, "hour": 8, "minute": 0}
         self.active_quests: List[Dict] = []
         self.completed_quests: List[Dict] = []
@@ -176,6 +177,9 @@ class GameState:
                    'conversation_history','session_events','phase']:
             if k in data:
                 setattr(s, k, data[k])
+        # Older saves had planet/city/district only. Keep their city, district
+        # and place intact while adding a geographic country where known.
+        s.current_location = normalize_location(s.current_location)
         if 'world_sim' in data:
             s.world_sim = WorldSimulator.from_dict(data['world_sim'])
         if 'npc_registry' in data:
@@ -411,6 +415,7 @@ class GameEngine:
             self.state.current_location = {"planet": "Ганимед", "city": "Станция Юпитер-Прайм", "district": "Торговые палубы", "place": ""}
         else:
             self.state.current_location = {"planet": "Земля", "city": "Нью-Токио", "district": "Индустриальный коридор", "place": ""}
+        self.state.current_location = normalize_location(self.state.current_location)
 
     # ========== GAME ACTIONS ==========
 
@@ -782,7 +787,7 @@ class GameEngine:
             f"Атр: {attrs_compact}",
             f"Навыки: {skills_compact}",
             f"Происхождение: {char.get('origin_name', char.get('origin', '?'))} | Спец: {char.get('specialization_name', char.get('specialization', '?'))}",
-            f"## ГДЕ: {loc.get('planet','?')} > {loc.get('city','?')} > {loc.get('district','')} | {self._format_game_time()}",
+            f"## ГДЕ: {' > '.join(str(value) for value in (loc.get('planet'), loc.get('country'), loc.get('city'), loc.get('district')) if value)} | {self._format_game_time()}",
         ]
         # Galaxy map context (short)
         gm_ctx = self.galaxy_map.get_prompt_context(loc)
@@ -1276,7 +1281,7 @@ class GameEngine:
         new_loc = state_changes.get("location")
         if new_loc and isinstance(new_loc, dict):
             old_loc = dict(self.state.current_location)
-            self.state.current_location.update(new_loc)
+            self.state.current_location = merge_location(old_loc, new_loc)
             # Record travel in NPC memory
             if old_loc.get("district") != new_loc.get("district", old_loc.get("district")):
                 self.state.session_events.append({

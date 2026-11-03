@@ -779,7 +779,7 @@ async function showSaves() {
                 <div class="save-info">
                     <div class="save-name">${s.character_name || '?'} — ${s.character_class || '?'}</div>
                     <div class="save-meta">
-                        Ур.${s.level || 1} • ${loc.city || '?'}, ${loc.planet || '?'}
+                        Ур.${s.level || 1} • ${[loc.planet, loc.country, loc.city].filter(Boolean).join(' › ') || '?'}
                         • ${gt.year || '?'}.${String(gt.month||0).padStart(2,'0')}.${String(gt.day||0).padStart(2,'0')}
                         • ${formatDate(s.save_time)}
                     </div>
@@ -1137,7 +1137,7 @@ function updateGameUI(state) {
 
     setText('game-char-name', c.name || '—');
     setText('game-char-class', `${c.class || c.origin_name || '?'} Ур.${c.level || 1}`);
-    setText('game-location', `${loc.city || '?'}, ${loc.planet || '?'} • ${loc.district || ''}`);
+    setText('game-location', `${[loc.planet, loc.country, loc.city].filter(Boolean).join(' › ') || '?'} • ${loc.district || ''}`);
     setText('game-time', state.time || '—');
 
     const hpPct = c.hp_max ? (c.hp / c.hp_max * 100) : 100;
@@ -1739,6 +1739,7 @@ async function renderMapPanel(container) {
         html += `<div class="panel-section-title">📍 ТЕКУЩЕЕ ПОЛОЖЕНИЕ</div>`;
         html += `<div class="map-location-card">`;
         html += `<div class="map-planet">🌍 ${loc.planet || '?'}</div>`;
+        if (loc.country) html += `<div class="map-city">🗺 ${loc.country}</div>`;
         html += `<div class="map-city">🏙 ${loc.city || '?'}</div>`;
         html += `<div class="map-district">📌 ${loc.district || '?'}</div>`;
         if (loc.place) html += `<div class="map-place">🏢 ${loc.place}</div>`;
