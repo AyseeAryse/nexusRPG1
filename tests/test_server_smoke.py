@@ -54,6 +54,16 @@ class TestServerRoutes:
         assert response.status_code == 200
         assert b"<html" in response.data.lower()
 
+    def test_index_has_live_static_assets(self, client):
+        """The rendered home page references CSS/JS files that Flask actually serves."""
+        response = client.get('/')
+        assert response.status_code == 200
+        for path in ('/static/css/style.css', '/static/js/app.js'):
+            assert path.encode('utf-8') in response.data
+            asset = client.get(path)
+            assert asset.status_code == 200, f'Asset not served: {path}'
+            assert asset.data, f'Empty static asset: {path}'
+
 
 class TestServerConfig:
     """Тесты конфигурации сервера."""
